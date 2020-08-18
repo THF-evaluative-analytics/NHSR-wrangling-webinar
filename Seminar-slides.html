@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Reshaping and combining data in R</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Emma Vestesson" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Reshaping and combining data in R
+### Emma Vestesson
+### The Health Foundation
+
+---
+
+
+
+
+
+## What we will cover today
+Session is aimed at advanced beginners and I will assume some familiarity with R and the tidyverse. 
+
+--
+### Coding along
+
+No need to code along, but if you want to, here is what you need: 
+
+
+- `tidyverse`, `here` and `lubridate` packages installed and loaded.
+- data from github repo
+
+--
+We will focus on two packages
+
+- Reshaping data - tidyr 
+- Joining data sets together - dplyr package
+---
+class: middle, center
+
+## What's your favourite R package?
+Please go to www.menti.com and enter the code 44 00 69 5
+
+
+
+
+
+---
+
+## Packages in R
+
+
+The first time you use it you need to install the package. 
+
+```r
+install.packages("tidyverse")
+```
+
+Load the package
+
+```r
+library(tidyverse)
+library(lubridate)
+
+```
+
+
+---
+
+## The pipe
+
+Simplifying R code with pipes (%&gt;%)
+
+
+nested statement
+```r
+leave_house(get_dressed(get_out_of_bed(wake_up(me))))
+```
+VS
+
+piped statement
+```r
+me %&gt;% 
+  wake_up() %&gt;% 
+  get_out_of_bed() %&gt;% 
+  get_dressed() %&gt;% 
+  leave_house()
+```
+
+**Keyboard shortcut ctrl+shift +m**
+
+
+
+
+---
+class: center, middle
+
+![](bad_data.jpeg)
+
+
+---
+
+## Does this look familiar? 
+ 
+
+![](Screenshot_nhs_111.png)
+--
+
+👨‍👩‍👧 😄
+
+
+--
+
+ 💻 😢 
+
+
+
+---
+class: 
+
+## Tidy data
+
+Data comes in all kinds of shapes and forms. 
+
+1. Each variable forms a column.
+2. Each observation forms a row.
+3. Each cell contains a single value.
+
+
+
+## tidyr package
+
+Tools to help to create tidy data, where each column is a variable, each row is an observation, and each cell contains a single value. 
+---
+
+- `pivot_longer` - you will end up with more rows
+![](https://rstudio-education.github.io/tidyverse-cookbook/images/tidyr-gather.png)
+
+- `pivot_wider` - you will end up with more variables
+![](https://rstudio-education.github.io/tidyverse-cookbook/images/tidyr-spread.png)
+
+---
+class: 
+
+## Sitrep data
+
+Downloaded data from [NHSE website](https://www.england.nhs.uk/statistics/statistical-work-areas/winter-daily-sitreps/winter-daily-sitrep-2017-18-data/) and saved in R data format. 
+
+
+
+```r
+sitrep &lt;- readRDS(here::here('data', 'sitrep.rds')) # all calls
+sitrep_60sec &lt;- readRDS(here::here('data', 'sitrep_60sec.rds')) # calls answered within 60sec
+```
+
+
+
+```r
+head(sitrep)
+```
+
+```
+## # A tibble: 6 x 9
+##   NHS_111_area_na… `26_Feb` `27_Feb` `28_Feb` `01_Mar` `02_Mar` `03_Mar`
+##   &lt;chr&gt;               &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 North East Engl…     2272     1793     1724     1707     1819     3998
+## 2 North West inc …     3433     3047     3180     2966     3185     7060
+## 3 Yorkshire And H…     3670     3144     2892     3289     3387     6990
+## 4 Lincolnshire NH…      359      355      503      446      444      961
+## 5 Luton &amp; Bedford…      410      361      363      292      390      692
+## 6 Nottinghamshire…      771      732      825      788      705     1384
+## # … with 2 more variables: `04_Mar` &lt;dbl&gt;, year &lt;dbl&gt;
+```
+
+---
+class: 
+## Potential analysis
+
+Plot the total number of calls over time
+
+Create 7 day rolling average
+
+Summarise by region
+
+--
+
+**Very difficult with the current set up**
+
+---
+class: middle
+
+## What is a sensible next step?
+
+1. make the data longer
+1. make the data wider
+1. nah don't bother, it is fine as it is
+
+
+	
+---
+class: left, middle
+
+## Let's make the data long
+
+
+```r
+sitrep_long &lt;- sitrep %&gt;% 
+  pivot_longer(
+*   cols=-c(NHS_111_area_name, year),
+    names_to='day_month',
+    values_to='calls')
+```
+
+
+---
+class: left, middle
+
+## Let's make the data long
+
+
+```r
+sitrep_long &lt;- sitrep %&gt;% 
+  pivot_longer(
+    cols=-c(NHS_111_area_name, year), 
+*   names_to='day_month',
+    values_to='calls')
+```
+
+
+---
+class: left, middle
+
+## Let's make the data long
+
+
+```r
+sitrep_long &lt;- sitrep %&gt;% 
+  pivot_longer(
+    cols=-c(NHS_111_area_name, year), 
+    names_to='day_month',
+*   values_to='calls')
+```
+
+---
+class: middle
+
+Our data is long and easier to work with! 
+
+
+```r
+head(sitrep_long)
+```
+
+```
+## # A tibble: 6 x 4
+##   NHS_111_area_name           year day_month calls
+##   &lt;chr&gt;                      &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1 North East England NHS 111  2018 26_Feb     2272
+## 2 North East England NHS 111  2018 27_Feb     1793
+## 3 North East England NHS 111  2018 28_Feb     1724
+## 4 North East England NHS 111  2018 01_Mar     1707
+## 5 North East England NHS 111  2018 02_Mar     1819
+## 6 North East England NHS 111  2018 03_Mar     3998
+```
+
+---
+
+Fix the date
+
+```r
+sitrep_long &lt;- sitrep_long %&gt;% 
+  mutate(day_month=str_replace(day_month, '_', '-'), 
+         date=paste(year, day_month, sep='-'), 
+         date=ydm(date)) %&gt;% 
+  select(-year, -day_month)
+
+head(sitrep_long)
+```
+
+```
+## # A tibble: 6 x 3
+##   NHS_111_area_name          calls date      
+##   &lt;chr&gt;                      &lt;dbl&gt; &lt;date&gt;    
+## 1 North East England NHS 111  2272 2018-02-26
+## 2 North East England NHS 111  1793 2018-02-27
+## 3 North East England NHS 111  1724 2018-02-28
+## 4 North East England NHS 111  1707 2018-03-01
+## 5 North East England NHS 111  1819 2018-03-02
+## 6 North East England NHS 111  3998 2018-03-03
+```
+
+---
+Calculate total calls by region
+
+```r
+sitrep_calls_by_region &lt;- sitrep_long %&gt;% 
+  group_by(NHS_111_area_name) %&gt;% 
+  summarise(total_calls_region=sum(calls)) 
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```r
+head(sitrep_calls_by_region)
+```
+
+```
+## # A tibble: 6 x 2
+##   NHS_111_area_name                                       total_calls_region
+##   &lt;chr&gt;                                                                &lt;dbl&gt;
+## 1 Banes &amp; Wiltshire NHS 111                                             3098
+## 2 Berkshire NHS 111                                                       NA
+## 3 Bristol, North Somerset &amp; South Gloucestershire NHS 111               6199
+## 4 Buckinghamshire NHS 111                                                 NA
+## 5 Cambridgeshire &amp; Peterborough NHS 111                                 4634
+## 6 Cornwall NHS 111                                                      3271
+```
+
+
+---
+
+
+```r
+sitrep_long %&gt;% 
+  group_by(date) %&gt;% 
+  summarise(total_calls_region=sum(calls, na.rm=TRUE)) %&gt;% 
+  ggplot(aes(x=date, y=total_calls_region)) + geom_point(colour='purple') + 
+  theme_minimal() + scale_x_date(date_labels = '%Y-%m-%d') + scale_y_continuous(limits = c(0, NA), labels=scales::comma) + labs(x='', y='', title='Daily calls to NHS 111')
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+![](Seminar-slides_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
+---
+
+You can also go back to a wide format eg after calculating the cumulative sum of calls. 
+
+
+```r
+sitrep_wide &lt;- sitrep_long %&gt;% 
+  group_by(NHS_111_area_name) %&gt;%
+  arrange(date) %&gt;% 
+  mutate(cum_call=cumsum(calls)) %&gt;% 
+  pivot_wider(id_cols = c(NHS_111_area_name), values_from=cum_call, names_from=date)
+
+head(sitrep_wide)
+```
+
+```
+## # A tibble: 6 x 8
+## # Groups:   NHS_111_area_name [6]
+##   NHS_111_area_na… `2018-02-26` `2018-02-27` `2018-02-28` `2018-03-01`
+##   &lt;chr&gt;                   &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 North East Engl…         2272         4065         5789         7496
+## 2 North West inc …         3433         6480         9660        12626
+## 3 Yorkshire And H…         3670         6814         9706        12995
+## 4 Lincolnshire NH…          359          714         1217         1663
+## 5 Luton &amp; Bedford…          410          771         1134         1426
+## 6 Nottinghamshire…          771         1503         2328         3116
+## # … with 3 more variables: `2018-03-02` &lt;dbl&gt;, `2018-03-03` &lt;dbl&gt;,
+## #   `2018-03-04` &lt;dbl&gt;
+```
+
+---
+
+The `who` data set from the tidyr package shows a slightly more complicated example. 
+
+
+```r
+data('who')
+tail(who)
+```
+
+```
+## # A tibble: 6 x 60
+##   country iso2  iso3   year new_sp_m014 new_sp_m1524 new_sp_m2534 new_sp_m3544
+##   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;int&gt;       &lt;int&gt;        &lt;int&gt;        &lt;int&gt;        &lt;int&gt;
+## 1 Zimbab… ZW    ZWE    2008         127          614            0         3316
+## 2 Zimbab… ZW    ZWE    2009         125          578           NA         3471
+## 3 Zimbab… ZW    ZWE    2010         150          710         2208         1682
+## 4 Zimbab… ZW    ZWE    2011         152          784         2467         2071
+## 5 Zimbab… ZW    ZWE    2012         120          783         2421         2086
+## 6 Zimbab… ZW    ZWE    2013          NA           NA           NA           NA
+## # … with 52 more variables: new_sp_m4554 &lt;int&gt;, new_sp_m5564 &lt;int&gt;,
+## #   new_sp_m65 &lt;int&gt;, new_sp_f014 &lt;int&gt;, new_sp_f1524 &lt;int&gt;,
+## #   new_sp_f2534 &lt;int&gt;, new_sp_f3544 &lt;int&gt;, new_sp_f4554 &lt;int&gt;,
+## #   new_sp_f5564 &lt;int&gt;, new_sp_f65 &lt;int&gt;, new_sn_m014 &lt;int&gt;,
+## #   new_sn_m1524 &lt;int&gt;, new_sn_m2534 &lt;int&gt;, new_sn_m3544 &lt;int&gt;,
+## #   new_sn_m4554 &lt;int&gt;, new_sn_m5564 &lt;int&gt;, new_sn_m65 &lt;int&gt;,
+## #   new_sn_f014 &lt;int&gt;, new_sn_f1524 &lt;int&gt;, new_sn_f2534 &lt;int&gt;,
+## #   new_sn_f3544 &lt;int&gt;, new_sn_f4554 &lt;int&gt;, new_sn_f5564 &lt;int&gt;,
+## #   new_sn_f65 &lt;int&gt;, new_ep_m014 &lt;int&gt;, new_ep_m1524 &lt;int&gt;,
+## #   new_ep_m2534 &lt;int&gt;, new_ep_m3544 &lt;int&gt;, new_ep_m4554 &lt;int&gt;,
+## #   new_ep_m5564 &lt;int&gt;, new_ep_m65 &lt;int&gt;, new_ep_f014 &lt;int&gt;,
+## #   new_ep_f1524 &lt;int&gt;, new_ep_f2534 &lt;int&gt;, new_ep_f3544 &lt;int&gt;,
+## #   new_ep_f4554 &lt;int&gt;, new_ep_f5564 &lt;int&gt;, new_ep_f65 &lt;int&gt;,
+## #   newrel_m014 &lt;int&gt;, newrel_m1524 &lt;int&gt;, newrel_m2534 &lt;int&gt;,
+## #   newrel_m3544 &lt;int&gt;, newrel_m4554 &lt;int&gt;, newrel_m5564 &lt;int&gt;,
+## #   newrel_m65 &lt;int&gt;, newrel_f014 &lt;int&gt;, newrel_f1524 &lt;int&gt;,
+## #   newrel_f2534 &lt;int&gt;, newrel_f3544 &lt;int&gt;, newrel_f4554 &lt;int&gt;,
+## #   newrel_f5564 &lt;int&gt;, newrel_f65 &lt;int&gt;
+```
+---
+
+# Structure of variable names
+
+
+```
+## [1] "newrel_f1524" "newrel_f2534" "newrel_f3544" "newrel_f4554" "newrel_f5564"
+## [6] "newrel_f65"
+```
+
+
+new or newrel
+
+method of diagnosis (rel = relapse, sn = negative pulmonary smear, sp = positive pulmonary smear, ep = extrapulmonary) 
+
+gender (f = female, m = male) 
+
+age group (014 = 0-14 yrs of age, 1524 = 15-24 years of age, etc.)
+
+
+
+---
+
+
+```r
+who %&gt;% pivot_longer(
+* cols = new_sp_m014:newrel_f65,
+  names_to = c("diagnosis", "gender", "age_group"), 
+  names_pattern = "new_?(.*)_(.)(.*)",
+  values_to = "count"
+)
+```
+
+---
+
+
+```r
+who %&gt;% pivot_longer(
+  cols = new_sp_m014:newrel_f65,
+* names_to = c("diagnosis", "gender", "age_group"),
+  names_pattern = "new_?(.*)_(.)(.*)",
+  values_to = "count"
+)
+```
+---
+
+```r
+who %&gt;% pivot_longer(
+  cols = new_sp_m014:newrel_f65,
+  names_to = c("diagnosis", "gender", "age_group"), 
+* names_pattern = "new_?(.*)_(.)(.*)",
+  values_to = "count"
+)
+```
+
+---
+
+
+```r
+who %&gt;% pivot_longer(
+  cols = new_sp_m014:newrel_f65,
+  names_to = c("diagnosis", "gender", "age_group"), 
+  names_pattern = "new_?(.*)_(.)(.*)", 
+* values_to = "count"
+)
+```
+---
+class: top
+background-image: url(https://www.memesmonkey.com/images/memesmonkey/e2/e24982369a32d97b56f206d303066b70.jpeg)
+background-position: bottom
+background-size: 800px 400px
+
+## Joining data sets
+
+**Do I want to add more rows or more columns? **
+
+---
+background-image: url(https://miro.medium.com/max/1400/1*uG1vjoSQj7gMm8craCj2xA.png)
+background-position: bottom
+background-size: 800px 400px
+
+**More rows? Great!**
+
+`bind_rows()` - use to combine different datasets eg monthly gp appointments
+Columns with the same variable names will be stacked but check for changes to variable names.
+
+
+
+---
+More columns? OK this is slightly more complicated but dplyr will be your friend. 
+
+`bind_cols()` - I rarely use it - doesn't respect the order of the variables
+
+
+Instead we can use join functions from `dplyr`. If you know sql, this is your lucky day as the syntax is very similar. 
+
+
+
+---
+## Mutating joins
+
+A mutating join allows you to combine variables from two tables. It first matches observations by their keys, then copies across variables from one table to the other.
+
+- inner_join(x,y) only keeps observations where in both
+- full_join(x,y) keeps all observations even if not in both
+- left_join(x,y) keeps all observations in x
+- right_join(x,y) keeps all observations in y
+
+![](https://d33wubrfki0l68.cloudfront.net/aeab386461820b029b7e7606ccff1286f623bae1/ef0d4/diagrams/join-venn.png)
+---
+
+## Filtering joins
+
+Filtering joins match observations in the same way as mutating joins, but affect the observations, not the variables.
+
+- anti_join(x,y) drops all observations in x that have a match in y
+- semi_join(x,y) keeps all observations in x that have a match in y
+
+
+---
+class: top
+background-size: cover
+background-image: url(https://media.makeameme.org/created/danger-danger-everwhere.jpg)
+
+
+---
+Let's revisit the NHS 111 data from before. 
+
+
+
+### All calls
+
+```
+## # A tibble: 6 x 5
+##   NHS_111_area_name           year day_month calls date_60sec
+##   &lt;chr&gt;                      &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
+## 1 North East England NHS 111  2018 26-Feb     1957 2018-02-26
+## 2 North East England NHS 111  2018 27-Feb     1787 2018-02-27
+## 3 North East England NHS 111  2018 28-Feb     1654 2018-02-28
+## 4 North East England NHS 111  2018 01-Mar     1661 2018-03-01
+## 5 North East England NHS 111  2018 02-Mar     1781 2018-03-02
+## 6 North East England NHS 111  2018 03-Mar     3396 2018-03-03
+```
+
+### Calls answered within 60 seconds
+
+```
+## # A tibble: 6 x 3
+##   NHS_111_area_name          calls date      
+##   &lt;chr&gt;                      &lt;dbl&gt; &lt;date&gt;    
+## 1 North East England NHS 111  2272 2018-02-26
+## 2 North East England NHS 111  1793 2018-02-27
+## 3 North East England NHS 111  1724 2018-02-28
+## 4 North East England NHS 111  1707 2018-03-01
+## 5 North East England NHS 111  1819 2018-03-02
+## 6 North East England NHS 111  3998 2018-03-03
+```
+
+
+---
+
+Mentimeter time!
+
+I want to combine the two data sets using the region name and the date. I want to keep all observations, even ones that do not exist in both data sets. Which type of join should I use? 
+
+
+![](https://d33wubrfki0l68.cloudfront.net/aeab386461820b029b7e7606ccff1286f623bae1/ef0d4/diagrams/join-venn.png)
+
+
+---
+class: middle
+
+```r
+sitrep_full &lt;- full_join(sitrep_long,
+                         sitrep_60sec_long,
+                         by=c('NHS_111_area_name', 'date'='date_60sec'),
+                         suffix=c('_all','_60sec')
+                         )
+```
+
+
+Worth noting 
+
+- you can add a suffix for any variables that appear in both datasets
+- you can join on multiple variables
+- the variables you merge on do not need to have the same name
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
