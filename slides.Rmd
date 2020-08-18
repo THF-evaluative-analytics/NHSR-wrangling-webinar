@@ -25,6 +25,8 @@ options(htmltools.dir.version = FALSE)
 ## What we will cover today
 Session is aimed at advanced beginners and I will assume some familiarity with R and the tidyverse. 
 
+You can find the slides here https://thf-evaluative-analytics.github.io/NHSR-wrangling-webinar/slides.html
+
 --
 ### Coding along
 
@@ -32,7 +34,8 @@ No need to code along, but if you want to, here is what you need:
 
 
 - `tidyverse`, `here` and `lubridate` packages installed and loaded.
-- data from github repo
+- data from github repo https://github.com/THF-evaluative-analytics/NHSR-wrangling-webinar
+
 
 --
 We will focus on two packages
@@ -43,9 +46,8 @@ We will focus on two packages
 class: middle, center
 
 ## What's your favourite R package?
-Please go to www.menti.com and enter the code 44 00 69 5
 
-
+Please go to www.menti.com 
 
 
 
@@ -124,18 +126,18 @@ class:
 
 ## Tidy data
 
-Data comes in all kinds of shapes and forms. 
+Data comes in all kinds of shapes and forms. We need a consistent way of storing data! 
+--
 
 1. Each variable forms a column.
 2. Each observation forms a row.
 3. Each cell contains a single value.
 
-
-
-## tidyr package
-
-Tools to help to create tidy data, where each column is a variable, each row is an observation, and each cell contains a single value. 
+![](https://d33wubrfki0l68.cloudfront.net/6f1ddb544fc5c69a2478e444ab8112fb0eea23f8/91adc/images/tidy-1.png)
 ---
+
+
+# tidyr package
 
 - `pivot_longer` - you will end up with more rows
 ![](https://rstudio-education.github.io/tidyverse-cookbook/images/tidyr-gather.png)
@@ -146,7 +148,7 @@ Tools to help to create tidy data, where each column is a variable, each row is 
 ---
 class: 
 
-## Sitrep data
+# Sitrep data
 
 Downloaded data from [NHSE website](https://www.england.nhs.uk/statistics/statistical-work-areas/winter-daily-sitreps/winter-daily-sitrep-2017-18-data/) and saved in R data format. 
 
@@ -170,15 +172,25 @@ Plot the total number of calls over time
 Create 7 day rolling average
 
 Summarise by region
+--
+
+.pull-right[
+<img src="https://pics.me.me/http-killer-headache-yeah-its-like-this-nemecrunch-com-5920580.png" >
+]
 
 --
 
+.pull-left[
 **Very difficult with the current set up**
+]
+
+
 
 ---
-class: middle
+class: 
 
-## What is a sensible next step?
+# What is a sensible next step?
+We have got a data set. What is a sensible next step? Please go to mentimeter
 
 1. make the data longer
 1. make the data wider
@@ -241,10 +253,8 @@ head(sitrep_long)
 Fix the date
 ```{r}
 sitrep_long <- sitrep_long %>% 
-  mutate(day_month=str_replace(day_month, '_', '-'), 
-         date=paste(year, day_month, sep='-'), 
-         date=ydm(date)) %>% 
-  select(-year, -day_month)
+  mutate(date=paste(day_month, year), date=dmy(date))
+
 
 head(sitrep_long)
 ```
@@ -262,7 +272,7 @@ head(sitrep_calls_by_region)
 
 
 ---
-
+Plot calls over time
 ```{r}
 sitrep_long %>% 
   group_by(date) %>% 
@@ -286,7 +296,7 @@ head(sitrep_wide)
 ```
 
 ---
-
+# Things get worse
 The `who` data set from the tidyr package shows a slightly more complicated example. 
 
 ```{r, include=TRUE}
@@ -303,7 +313,7 @@ tail(names(who))
 ```
 
 
-new or newrel
+new 
 
 method of diagnosis (rel = relapse, sn = negative pulmonary smear, sp = positive pulmonary smear, ep = extrapulmonary) 
 
@@ -358,12 +368,31 @@ who %>% pivot_longer(
 )
 ```
 ---
+class: 
+# Combine datasets
+
+
+.pull-left[
+![](https://www.trek10.com/assets/content_posts_2019-01-02-dynamodb-single-table-relational-modeling_northwind-erd.png?mtime=20191120050200&focal=none)
+]
+.pull-right[]
+
+.pull-right[
+![](https://dplyr.tidyverse.org/logo.png)
+]
+---
+class: top
+background-size: cover
+background-image: url(https://media.makeameme.org/created/danger-danger-everwhere.jpg)
+
+
+---
 class: top
 background-image: url(https://www.memesmonkey.com/images/memesmonkey/e2/e24982369a32d97b56f206d303066b70.jpeg)
 background-position: bottom
 background-size: 800px 400px
 
-## Joining data sets
+# Asking some big questions
 
 **Do I want to add more rows or more columns? **
 
@@ -400,20 +429,7 @@ A mutating join allows you to combine variables from two tables. It first matche
 - right_join(x,y) keeps all observations in y
 
 ![](https://d33wubrfki0l68.cloudfront.net/aeab386461820b029b7e7606ccff1286f623bae1/ef0d4/diagrams/join-venn.png)
----
 
-## Filtering joins
-
-Filtering joins match observations in the same way as mutating joins, but affect the observations, not the variables.
-
-- anti_join(x,y) drops all observations in x that have a match in y
-- semi_join(x,y) keeps all observations in x that have a match in y
-
-
----
-class: top
-background-size: cover
-background-image: url(https://media.makeameme.org/created/danger-danger-everwhere.jpg)
 
 
 ---
@@ -467,5 +483,61 @@ Worth noting
 - you can add a suffix for any variables that appear in both datasets
 - you can join on multiple variables
 - the variables you merge on do not need to have the same name
+
+---
+
+## Filtering joins
+
+Filtering joins match observations in the same way as mutating joins, but affect the observations, not the variables.
+
+- anti_join(x,y) drops all observations in x that have a match in y
+- semi_join(x,y) keeps all observations in x that have a match in y (similar to inner_join but no columns are added)
+
+<img src="https://psyteachr.github.io/msc-data-skills/images/joins/anti_join.png" height=300>
+
+
+---
+We have another data set called `regions` with the region, a region code and the area name 
+```{r}
+regions <- readRDS(here::here('data', 'regions.rds'))
+head(regions)
+```
+
+
+---
+
+# Mentimeter time
+
+I want to check that all areas appear in the region file. What join function should I use? 
+
+1. left_join
+1. anti_join
+1. semi_join
+
+---
+
+We also have a dataset with some areas of special interest. 
+
+
+```{r}
+areas_of_interest <- readRDS(here::here('data', 'areas_of_interest.rds'))
+head(areas_of_interest)
+```
+---
+
+# Mentimeter time
+
+I want to use one the join functions to only keep the observations in `sitrep_full` that also appear in `areas_of_interest` but I don't want to keep any of the variables from `areas_of_interest`. Which statment will work?
+
+
+1. anti_join(sitrep_full, areas_of_interest, by=c('NHS_111_area_name'='nhs_111_area_name'))
+1. semi_join(sitrep_full, areas_of_interest, by=c('NHS_111_area_name'='nhs_111_area_name'))
+1. inner_join(sitrep_full, areas_of_interest, by=c('NHS_111_area_name'='nhs_111_area_name'))
+
+---
+
+class: middle
+
+Thank you for listening!
 
 

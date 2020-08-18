@@ -25,6 +25,8 @@ class: center, middle, inverse, title-slide
 ## What we will cover today
 Session is aimed at advanced beginners and I will assume some familiarity with R and the tidyverse. 
 
+You can find the slides here https://thf-evaluative-analytics.github.io/NHSR-wrangling-webinar/slides.html
+
 --
 ### Coding along
 
@@ -32,7 +34,8 @@ No need to code along, but if you want to, here is what you need:
 
 
 - `tidyverse`, `here` and `lubridate` packages installed and loaded.
-- data from github repo
+- data from github repo https://github.com/THF-evaluative-analytics/NHSR-wrangling-webinar
+
 
 --
 We will focus on two packages
@@ -43,9 +46,8 @@ We will focus on two packages
 class: middle, center
 
 ## What's your favourite R package?
-Please go to www.menti.com and enter the code 44 00 69 5
 
-
+Please go to www.menti.com 
 
 
 
@@ -124,18 +126,18 @@ class:
 
 ## Tidy data
 
-Data comes in all kinds of shapes and forms. 
+Data comes in all kinds of shapes and forms. We need a consistent way of storing data! 
+--
 
 1. Each variable forms a column.
 2. Each observation forms a row.
 3. Each cell contains a single value.
 
-
-
-## tidyr package
-
-Tools to help to create tidy data, where each column is a variable, each row is an observation, and each cell contains a single value. 
+![](https://d33wubrfki0l68.cloudfront.net/6f1ddb544fc5c69a2478e444ab8112fb0eea23f8/91adc/images/tidy-1.png)
 ---
+
+
+# tidyr package
 
 - `pivot_longer` - you will end up with more rows
 ![](https://rstudio-education.github.io/tidyverse-cookbook/images/tidyr-gather.png)
@@ -146,7 +148,7 @@ Tools to help to create tidy data, where each column is a variable, each row is 
 ---
 class: 
 
-## Sitrep data
+# Sitrep data
 
 Downloaded data from [NHSE website](https://www.england.nhs.uk/statistics/statistical-work-areas/winter-daily-sitreps/winter-daily-sitrep-2017-18-data/) and saved in R data format. 
 
@@ -165,15 +167,16 @@ head(sitrep)
 
 ```
 ## # A tibble: 6 x 9
-##   NHS_111_area_na… `26_Feb` `27_Feb` `28_Feb` `01_Mar` `02_Mar` `03_Mar`
-##   &lt;chr&gt;               &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-## 1 North East Engl…     2272     1793     1724     1707     1819     3998
-## 2 North West inc …     3433     3047     3180     2966     3185     7060
-## 3 Yorkshire And H…     3670     3144     2892     3289     3387     6990
-## 4 Lincolnshire NH…      359      355      503      446      444      961
-## 5 Luton &amp; Bedford…      410      361      363      292      390      692
-## 6 Nottinghamshire…      771      732      825      788      705     1384
-## # … with 2 more variables: `04_Mar` &lt;dbl&gt;, year &lt;dbl&gt;
+##   NHS_111_area_na… `26_Feb` `27_Feb` `28_Feb` `01_Mar`
+##   &lt;chr&gt;               &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 North East Engl…     2272     1793     1724     1707
+## 2 North West inc …     3433     3047     3180     2966
+## 3 Yorkshire And H…     3670     3144     2892     3289
+## 4 Lincolnshire NH…      359      355      503      446
+## 5 Luton &amp; Bedford…      410      361      363      292
+## 6 Nottinghamshire…      771      732      825      788
+## # … with 4 more variables: `02_Mar` &lt;dbl&gt;,
+## #   `03_Mar` &lt;dbl&gt;, `04_Mar` &lt;dbl&gt;, year &lt;dbl&gt;
 ```
 
 ---
@@ -185,15 +188,25 @@ Plot the total number of calls over time
 Create 7 day rolling average
 
 Summarise by region
+--
+
+.pull-right[
+&lt;img src="https://pics.me.me/http-killer-headache-yeah-its-like-this-nemecrunch-com-5920580.png" &gt;
+]
 
 --
 
+.pull-left[
 **Very difficult with the current set up**
+]
+
+
 
 ---
-class: middle
+class: 
 
-## What is a sensible next step?
+# What is a sensible next step?
+We have got a data set. What is a sensible next step? Please go to mentimeter
 
 1. make the data longer
 1. make the data wider
@@ -273,24 +286,22 @@ Fix the date
 
 ```r
 sitrep_long &lt;- sitrep_long %&gt;% 
-  mutate(day_month=str_replace(day_month, '_', '-'), 
-         date=paste(year, day_month, sep='-'), 
-         date=ydm(date)) %&gt;% 
-  select(-year, -day_month)
+  mutate(date=paste(day_month, year), date=dmy(date))
+
 
 head(sitrep_long)
 ```
 
 ```
-## # A tibble: 6 x 3
-##   NHS_111_area_name          calls date      
-##   &lt;chr&gt;                      &lt;dbl&gt; &lt;date&gt;    
-## 1 North East England NHS 111  2272 2018-02-26
-## 2 North East England NHS 111  1793 2018-02-27
-## 3 North East England NHS 111  1724 2018-02-28
-## 4 North East England NHS 111  1707 2018-03-01
-## 5 North East England NHS 111  1819 2018-03-02
-## 6 North East England NHS 111  3998 2018-03-03
+## # A tibble: 6 x 5
+##   NHS_111_area_name       year day_month calls date      
+##   &lt;chr&gt;                  &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
+## 1 North East England NH…  2018 26_Feb     2272 2018-02-26
+## 2 North East England NH…  2018 27_Feb     1793 2018-02-27
+## 3 North East England NH…  2018 28_Feb     1724 2018-02-28
+## 4 North East England NH…  2018 01_Mar     1707 2018-03-01
+## 5 North East England NH…  2018 02_Mar     1819 2018-03-02
+## 6 North East England NH…  2018 03_Mar     3998 2018-03-03
 ```
 
 ---
@@ -312,19 +323,19 @@ head(sitrep_calls_by_region)
 
 ```
 ## # A tibble: 6 x 2
-##   NHS_111_area_name                                       total_calls_region
-##   &lt;chr&gt;                                                                &lt;dbl&gt;
-## 1 Banes &amp; Wiltshire NHS 111                                             3098
-## 2 Berkshire NHS 111                                                       NA
-## 3 Bristol, North Somerset &amp; South Gloucestershire NHS 111               6199
-## 4 Buckinghamshire NHS 111                                                 NA
-## 5 Cambridgeshire &amp; Peterborough NHS 111                                 4634
-## 6 Cornwall NHS 111                                                      3271
+##   NHS_111_area_name                     total_calls_regi…
+##   &lt;chr&gt;                                             &lt;dbl&gt;
+## 1 Banes &amp; Wiltshire NHS 111                          3098
+## 2 Berkshire NHS 111                                    NA
+## 3 Bristol, North Somerset &amp; South Glou…              6199
+## 4 Buckinghamshire NHS 111                              NA
+## 5 Cambridgeshire &amp; Peterborough NHS 111              4634
+## 6 Cornwall NHS 111                                   3271
 ```
 
 
 ---
-
+Plot calls over time
 
 ```r
 sitrep_long %&gt;% 
@@ -358,20 +369,21 @@ head(sitrep_wide)
 ```
 ## # A tibble: 6 x 8
 ## # Groups:   NHS_111_area_name [6]
-##   NHS_111_area_na… `2018-02-26` `2018-02-27` `2018-02-28` `2018-03-01`
-##   &lt;chr&gt;                   &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
-## 1 North East Engl…         2272         4065         5789         7496
-## 2 North West inc …         3433         6480         9660        12626
-## 3 Yorkshire And H…         3670         6814         9706        12995
-## 4 Lincolnshire NH…          359          714         1217         1663
-## 5 Luton &amp; Bedford…          410          771         1134         1426
-## 6 Nottinghamshire…          771         1503         2328         3116
-## # … with 3 more variables: `2018-03-02` &lt;dbl&gt;, `2018-03-03` &lt;dbl&gt;,
+##   NHS_111_area_na… `2018-02-26` `2018-02-27` `2018-02-28`
+##   &lt;chr&gt;                   &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1 North East Engl…         2272         4065         5789
+## 2 North West inc …         3433         6480         9660
+## 3 Yorkshire And H…         3670         6814         9706
+## 4 Lincolnshire NH…          359          714         1217
+## 5 Luton &amp; Bedford…          410          771         1134
+## 6 Nottinghamshire…          771         1503         2328
+## # … with 4 more variables: `2018-03-01` &lt;dbl&gt;,
+## #   `2018-03-02` &lt;dbl&gt;, `2018-03-03` &lt;dbl&gt;,
 ## #   `2018-03-04` &lt;dbl&gt;
 ```
 
 ---
-
+# Things get worse
 The `who` data set from the tidyr package shows a slightly more complicated example. 
 
 
@@ -382,32 +394,42 @@ tail(who)
 
 ```
 ## # A tibble: 6 x 60
-##   country iso2  iso3   year new_sp_m014 new_sp_m1524 new_sp_m2534 new_sp_m3544
-##   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;int&gt;       &lt;int&gt;        &lt;int&gt;        &lt;int&gt;        &lt;int&gt;
-## 1 Zimbab… ZW    ZWE    2008         127          614            0         3316
-## 2 Zimbab… ZW    ZWE    2009         125          578           NA         3471
-## 3 Zimbab… ZW    ZWE    2010         150          710         2208         1682
-## 4 Zimbab… ZW    ZWE    2011         152          784         2467         2071
-## 5 Zimbab… ZW    ZWE    2012         120          783         2421         2086
-## 6 Zimbab… ZW    ZWE    2013          NA           NA           NA           NA
-## # … with 52 more variables: new_sp_m4554 &lt;int&gt;, new_sp_m5564 &lt;int&gt;,
-## #   new_sp_m65 &lt;int&gt;, new_sp_f014 &lt;int&gt;, new_sp_f1524 &lt;int&gt;,
-## #   new_sp_f2534 &lt;int&gt;, new_sp_f3544 &lt;int&gt;, new_sp_f4554 &lt;int&gt;,
-## #   new_sp_f5564 &lt;int&gt;, new_sp_f65 &lt;int&gt;, new_sn_m014 &lt;int&gt;,
-## #   new_sn_m1524 &lt;int&gt;, new_sn_m2534 &lt;int&gt;, new_sn_m3544 &lt;int&gt;,
-## #   new_sn_m4554 &lt;int&gt;, new_sn_m5564 &lt;int&gt;, new_sn_m65 &lt;int&gt;,
-## #   new_sn_f014 &lt;int&gt;, new_sn_f1524 &lt;int&gt;, new_sn_f2534 &lt;int&gt;,
-## #   new_sn_f3544 &lt;int&gt;, new_sn_f4554 &lt;int&gt;, new_sn_f5564 &lt;int&gt;,
-## #   new_sn_f65 &lt;int&gt;, new_ep_m014 &lt;int&gt;, new_ep_m1524 &lt;int&gt;,
-## #   new_ep_m2534 &lt;int&gt;, new_ep_m3544 &lt;int&gt;, new_ep_m4554 &lt;int&gt;,
-## #   new_ep_m5564 &lt;int&gt;, new_ep_m65 &lt;int&gt;, new_ep_f014 &lt;int&gt;,
-## #   new_ep_f1524 &lt;int&gt;, new_ep_f2534 &lt;int&gt;, new_ep_f3544 &lt;int&gt;,
-## #   new_ep_f4554 &lt;int&gt;, new_ep_f5564 &lt;int&gt;, new_ep_f65 &lt;int&gt;,
-## #   newrel_m014 &lt;int&gt;, newrel_m1524 &lt;int&gt;, newrel_m2534 &lt;int&gt;,
-## #   newrel_m3544 &lt;int&gt;, newrel_m4554 &lt;int&gt;, newrel_m5564 &lt;int&gt;,
-## #   newrel_m65 &lt;int&gt;, newrel_f014 &lt;int&gt;, newrel_f1524 &lt;int&gt;,
-## #   newrel_f2534 &lt;int&gt;, newrel_f3544 &lt;int&gt;, newrel_f4554 &lt;int&gt;,
-## #   newrel_f5564 &lt;int&gt;, newrel_f65 &lt;int&gt;
+##   country iso2  iso3   year new_sp_m014 new_sp_m1524
+##   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;int&gt;       &lt;int&gt;        &lt;int&gt;
+## 1 Zimbab… ZW    ZWE    2008         127          614
+## 2 Zimbab… ZW    ZWE    2009         125          578
+## 3 Zimbab… ZW    ZWE    2010         150          710
+## 4 Zimbab… ZW    ZWE    2011         152          784
+## 5 Zimbab… ZW    ZWE    2012         120          783
+## 6 Zimbab… ZW    ZWE    2013          NA           NA
+## # … with 54 more variables: new_sp_m2534 &lt;int&gt;,
+## #   new_sp_m3544 &lt;int&gt;, new_sp_m4554 &lt;int&gt;,
+## #   new_sp_m5564 &lt;int&gt;, new_sp_m65 &lt;int&gt;,
+## #   new_sp_f014 &lt;int&gt;, new_sp_f1524 &lt;int&gt;,
+## #   new_sp_f2534 &lt;int&gt;, new_sp_f3544 &lt;int&gt;,
+## #   new_sp_f4554 &lt;int&gt;, new_sp_f5564 &lt;int&gt;,
+## #   new_sp_f65 &lt;int&gt;, new_sn_m014 &lt;int&gt;,
+## #   new_sn_m1524 &lt;int&gt;, new_sn_m2534 &lt;int&gt;,
+## #   new_sn_m3544 &lt;int&gt;, new_sn_m4554 &lt;int&gt;,
+## #   new_sn_m5564 &lt;int&gt;, new_sn_m65 &lt;int&gt;,
+## #   new_sn_f014 &lt;int&gt;, new_sn_f1524 &lt;int&gt;,
+## #   new_sn_f2534 &lt;int&gt;, new_sn_f3544 &lt;int&gt;,
+## #   new_sn_f4554 &lt;int&gt;, new_sn_f5564 &lt;int&gt;,
+## #   new_sn_f65 &lt;int&gt;, new_ep_m014 &lt;int&gt;,
+## #   new_ep_m1524 &lt;int&gt;, new_ep_m2534 &lt;int&gt;,
+## #   new_ep_m3544 &lt;int&gt;, new_ep_m4554 &lt;int&gt;,
+## #   new_ep_m5564 &lt;int&gt;, new_ep_m65 &lt;int&gt;,
+## #   new_ep_f014 &lt;int&gt;, new_ep_f1524 &lt;int&gt;,
+## #   new_ep_f2534 &lt;int&gt;, new_ep_f3544 &lt;int&gt;,
+## #   new_ep_f4554 &lt;int&gt;, new_ep_f5564 &lt;int&gt;,
+## #   new_ep_f65 &lt;int&gt;, newrel_m014 &lt;int&gt;,
+## #   newrel_m1524 &lt;int&gt;, newrel_m2534 &lt;int&gt;,
+## #   newrel_m3544 &lt;int&gt;, newrel_m4554 &lt;int&gt;,
+## #   newrel_m5564 &lt;int&gt;, newrel_m65 &lt;int&gt;,
+## #   newrel_f014 &lt;int&gt;, newrel_f1524 &lt;int&gt;,
+## #   newrel_f2534 &lt;int&gt;, newrel_f3544 &lt;int&gt;,
+## #   newrel_f4554 &lt;int&gt;, newrel_f5564 &lt;int&gt;,
+## #   newrel_f65 &lt;int&gt;
 ```
 ---
 
@@ -415,12 +437,12 @@ tail(who)
 
 
 ```
-## [1] "newrel_f1524" "newrel_f2534" "newrel_f3544" "newrel_f4554" "newrel_f5564"
-## [6] "newrel_f65"
+## [1] "newrel_f1524" "newrel_f2534" "newrel_f3544"
+## [4] "newrel_f4554" "newrel_f5564" "newrel_f65"
 ```
 
 
-new or newrel
+new 
 
 method of diagnosis (rel = relapse, sn = negative pulmonary smear, sp = positive pulmonary smear, ep = extrapulmonary) 
 
@@ -476,12 +498,31 @@ who %&gt;% pivot_longer(
 )
 ```
 ---
+class: 
+# Combine datasets
+
+
+.pull-left[
+![](https://www.trek10.com/assets/content_posts_2019-01-02-dynamodb-single-table-relational-modeling_northwind-erd.png?mtime=20191120050200&amp;focal=none)
+]
+.pull-right[]
+
+.pull-right[
+![](https://dplyr.tidyverse.org/logo.png)
+]
+---
+class: top
+background-size: cover
+background-image: url(https://media.makeameme.org/created/danger-danger-everwhere.jpg)
+
+
+---
 class: top
 background-image: url(https://www.memesmonkey.com/images/memesmonkey/e2/e24982369a32d97b56f206d303066b70.jpeg)
 background-position: bottom
 background-size: 800px 400px
 
-## Joining data sets
+# Asking some big questions
 
 **Do I want to add more rows or more columns? **
 
@@ -518,20 +559,7 @@ A mutating join allows you to combine variables from two tables. It first matche
 - right_join(x,y) keeps all observations in y
 
 ![](https://d33wubrfki0l68.cloudfront.net/aeab386461820b029b7e7606ccff1286f623bae1/ef0d4/diagrams/join-venn.png)
----
 
-## Filtering joins
-
-Filtering joins match observations in the same way as mutating joins, but affect the observations, not the variables.
-
-- anti_join(x,y) drops all observations in x that have a match in y
-- semi_join(x,y) keeps all observations in x that have a match in y
-
-
----
-class: top
-background-size: cover
-background-image: url(https://media.makeameme.org/created/danger-danger-everwhere.jpg)
 
 
 ---
@@ -543,28 +571,28 @@ Let's revisit the NHS 111 data from before.
 
 ```
 ## # A tibble: 6 x 5
-##   NHS_111_area_name           year day_month calls date_60sec
-##   &lt;chr&gt;                      &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
-## 1 North East England NHS 111  2018 26-Feb     1957 2018-02-26
-## 2 North East England NHS 111  2018 27-Feb     1787 2018-02-27
-## 3 North East England NHS 111  2018 28-Feb     1654 2018-02-28
-## 4 North East England NHS 111  2018 01-Mar     1661 2018-03-01
-## 5 North East England NHS 111  2018 02-Mar     1781 2018-03-02
-## 6 North East England NHS 111  2018 03-Mar     3396 2018-03-03
+##   NHS_111_area_name       year day_month calls date_60sec
+##   &lt;chr&gt;                  &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
+## 1 North East England NH…  2018 26-Feb     1957 2018-02-26
+## 2 North East England NH…  2018 27-Feb     1787 2018-02-27
+## 3 North East England NH…  2018 28-Feb     1654 2018-02-28
+## 4 North East England NH…  2018 01-Mar     1661 2018-03-01
+## 5 North East England NH…  2018 02-Mar     1781 2018-03-02
+## 6 North East England NH…  2018 03-Mar     3396 2018-03-03
 ```
 
 ### Calls answered within 60 seconds
 
 ```
-## # A tibble: 6 x 3
-##   NHS_111_area_name          calls date      
-##   &lt;chr&gt;                      &lt;dbl&gt; &lt;date&gt;    
-## 1 North East England NHS 111  2272 2018-02-26
-## 2 North East England NHS 111  1793 2018-02-27
-## 3 North East England NHS 111  1724 2018-02-28
-## 4 North East England NHS 111  1707 2018-03-01
-## 5 North East England NHS 111  1819 2018-03-02
-## 6 North East England NHS 111  3998 2018-03-03
+## # A tibble: 6 x 5
+##   NHS_111_area_name       year day_month calls date      
+##   &lt;chr&gt;                  &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
+## 1 North East England NH…  2018 26_Feb     2272 2018-02-26
+## 2 North East England NH…  2018 27_Feb     1793 2018-02-27
+## 3 North East England NH…  2018 28_Feb     1724 2018-02-28
+## 4 North East England NH…  2018 01_Mar     1707 2018-03-01
+## 5 North East England NH…  2018 02_Mar     1819 2018-03-02
+## 6 North East England NH…  2018 03_Mar     3998 2018-03-03
 ```
 
 
@@ -595,6 +623,98 @@ Worth noting
 - you can add a suffix for any variables that appear in both datasets
 - you can join on multiple variables
 - the variables you merge on do not need to have the same name
+
+---
+
+## Filtering joins
+
+Filtering joins match observations in the same way as mutating joins, but affect the observations, not the variables.
+
+- anti_join(x,y) drops all observations in x that have a match in y
+- semi_join(x,y) keeps all observations in x that have a match in y (similar to inner_join but no columns are added)
+
+&lt;img src="https://psyteachr.github.io/msc-data-skills/images/joins/anti_join.png" height=300&gt;
+
+
+---
+We have another data set called `regions` with the region, a region code and the area name 
+
+```r
+regions &lt;- readRDS(here::here('data', 'regions.rds'))
+head(regions)
+```
+
+```
+##            region   code
+## 1           North 111AA1
+## 2           North 111AF8
+## 3           North 111AD9
+## 4 Midlands &amp; East 111AA2
+## 5 Midlands &amp; East 111AG7
+## 6 Midlands &amp; East 111AA4
+##                  nhs_111_area_name
+## 1       North East England NHS 111
+## 2 North West inc Blackpool NHS 111
+## 3     Yorkshire And Humber NHS 111
+## 4             Lincolnshire NHS 111
+## 5     Luton &amp; Bedfordshire NHS 111
+## 6          Nottinghamshire NHS 111
+```
+
+
+---
+
+# Mentimeter time
+
+I want to check that all areas appear in the region file. What join function should I use? 
+
+1. left_join
+1. anti_join
+1. semi_join
+
+---
+
+We also have a dataset with some areas of special interest. 
+
+
+
+```r
+areas_of_interest &lt;- readRDS(here::here('data', 'areas_of_interest.rds'))
+head(areas_of_interest)
+```
+
+```
+##            region   code
+## 1           North 111AA1
+## 2           North 111AF8
+## 3 Midlands &amp; East 111AC3
+## 4 Midlands &amp; East 111AC6
+## 5          London 111AA7
+## 6          London 111AD4
+##                  nhs_111_area_name
+## 1       North East England NHS 111
+## 2 North West inc Blackpool NHS 111
+## 3              North Essex NHS 111
+## 4         Northamptonshire NHS 111
+## 5  Inner North West London NHS 111
+## 6        North West London NHS 111
+```
+---
+
+# Mentimeter time
+
+I want to use one the join functions to only keep the observations in `sitrep_full` that also appear in `areas_of_interest` but I don't want to keep any of the variables from `areas_of_interest`. Which statment will work?
+
+
+1. anti_join(sitrep_full, areas_of_interest, by=c('NHS_111_area_name'='nhs_111_area_name'))
+1. semi_join(sitrep_full, areas_of_interest, by=c('NHS_111_area_name'='nhs_111_area_name'))
+1. inner_join(sitrep_full, areas_of_interest, by=c('NHS_111_area_name'='nhs_111_area_name'))
+
+---
+
+class: middle
+
+Thank you for listening!
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
