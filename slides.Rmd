@@ -12,10 +12,14 @@ output:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+
+
+
 ---
 
 ```{r setup, include=FALSE}
-
+knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(fig.retina = 3)
 library(tidyverse)
 library(lubridate)
 options(htmltools.dir.version = FALSE)
@@ -104,22 +108,6 @@ class: center, middle
 ![](bad_data.jpeg)
 
 
----
-
-## Does this look familiar? 
- 
-
-![](Screenshot_nhs_111.png)
---
-
-`r emo::ji("family_man_woman_girl") ` `r emo::ji("smile") `
-
-
---
-
- `r emo::ji("computer") ` `r emo::ji("cry") ` 
-
-
 
 ---
 class: 
@@ -139,11 +127,27 @@ Data comes in all kinds of shapes and forms. We need a consistent way of storing
 
 # tidyr package
 
-- `pivot_longer` - you will end up with more rows
+`pivot_longer` - you will end up with more rows
 ![](https://rstudio-education.github.io/tidyverse-cookbook/images/tidyr-gather.png)
 
-- `pivot_wider` - you will end up with more variables
+`pivot_wider` - you will end up with more variables (or at least fewer rows)
 ![](https://rstudio-education.github.io/tidyverse-cookbook/images/tidyr-spread.png)
+---
+
+## Does this look familiar? 
+ 
+
+![](Screenshot_nhs_111.png)
+--
+
+`r emo::ji("family_man_woman_girl") ` `r emo::ji("smile") `
+
+
+--
+
+ `r emo::ji("computer") ` `r emo::ji("cry") ` 
+
+
 
 ---
 class: 
@@ -296,6 +300,36 @@ head(sitrep_wide)
 ```
 
 ---
+The `us_rent_income` dataset contains information about median income and rent for each state in the US for 2017.
+
+```{r}
+us_rent_income
+```
+
+---
+
+```{r}
+us_wide <- pivot_wider(us_rent_income, 
+                       names_from = variable, 
+                       values_from = c(estimate, moe))
+```
+
+
+```{r}
+ggplot(us_wide, aes(x=estimate_income, estimate_rent)) + geom_point(colour='purple') + scale_y_continuous(limits=c(0, NA)) + scale_x_continuous(limits=c(0, NA)) +
+  theme_minimal() + labs(x='Estimated income', y='Estimated rent')
+```
+
+---
+# Note!
+
+names_to and values_to from `pivot_longer()` should be quoted because you are creating new variables
+
+names_from and values_from from `pivot_wider()` should not be quoted because you are referring to variables that exist in your data frame.
+
+
+
+---
 # Things get worse
 The `who` data set from the tidyr package shows a slightly more complicated example. 
 
@@ -308,16 +342,21 @@ tail(who)
 # Structure of variable names
 
 ```{r, echo=FALSE}
-
 tail(names(who))
 ```
 
 
 new 
 
++
+
 method of diagnosis (rel = relapse, sn = negative pulmonary smear, sp = positive pulmonary smear, ep = extrapulmonary) 
 
++
+
 gender (f = female, m = male) 
+
++
 
 age group (014 = 0-14 yrs of age, 1524 = 15-24 years of age, etc.)
 
@@ -404,6 +443,7 @@ background-size: 800px 400px
 **More rows? Great!**
 
 `bind_rows()` - use to combine different datasets eg monthly gp appointments
+
 Columns with the same variable names will be stacked but check for changes to variable names.
 
 
@@ -411,10 +451,10 @@ Columns with the same variable names will be stacked but check for changes to va
 ---
 More columns? OK this is slightly more complicated but dplyr will be your friend. 
 
-`bind_cols()` - I rarely use it - doesn't respect the order of the variables
+`bind_cols()` - I rarely use it - doesn't respect the order of the observations
 
 
-Instead we can use join functions from `dplyr`. If you know sql, this is your lucky day as the syntax is very similar. 
+If we have a variable (or many) that identify your observations then we can use join functions from `dplyr`. If you know sql, this is your lucky day as the syntax is very similar. 
 
 
 
@@ -448,12 +488,12 @@ mutate(day_month=str_replace(day_month, '_', '-'), date=paste(year, day_month, s
 
 ### All calls
 ```{r, echo=FALSE}
-head(sitrep_60sec_long)
+head(sitrep_long)
 ```
 
 ### Calls answered within 60 seconds
 ```{r, echo=FALSE}
-head(sitrep_long)
+head(sitrep_60sec_long)
 ```
 
 
@@ -493,7 +533,7 @@ Filtering joins match observations in the same way as mutating joins, but affect
 - anti_join(x,y) drops all observations in x that have a match in y
 - semi_join(x,y) keeps all observations in x that have a match in y (similar to inner_join but no columns are added)
 
-<img src="https://psyteachr.github.io/msc-data-skills/images/joins/anti_join.png" height=300>
+<img src="https://psyteachr.github.io/msc-data-skills/images/joins/anti_join.png" height=300 >
 
 
 ---
@@ -510,9 +550,9 @@ head(regions)
 
 I want to check that all areas appear in the region file. What join function should I use? 
 
-1. left_join
-1. anti_join
-1. semi_join
+1. left_join(sitrep_full, region)
+1. anti_join(sitrep_full, region)
+1. semi_join(sitrep_full, region)
 
 ---
 
@@ -527,7 +567,7 @@ head(areas_of_interest)
 
 # Mentimeter time
 
-I want to use one the join functions to only keep the observations in `sitrep_full` that also appear in `areas_of_interest` but I don't want to keep any of the variables from `areas_of_interest`. Which statment will work?
+I want to use one the join functions to only keep the observations in `sitrep_full` that also appear in `areas_of_interest` but I don't want to keep any of the variables from `areas_of_interest`. Which statment will do want I want?
 
 
 1. anti_join(sitrep_full, areas_of_interest, by=c('NHS_111_area_name'='nhs_111_area_name'))

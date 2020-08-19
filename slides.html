@@ -104,22 +104,6 @@ class: center, middle
 ![](bad_data.jpeg)
 
 
----
-
-## Does this look familiar? 
- 
-
-![](Screenshot_nhs_111.png)
---
-
-👨‍👩‍👧 😄
-
-
---
-
- 💻 😢 
-
-
 
 ---
 class: 
@@ -139,11 +123,27 @@ Data comes in all kinds of shapes and forms. We need a consistent way of storing
 
 # tidyr package
 
-- `pivot_longer` - you will end up with more rows
+`pivot_longer` - you will end up with more rows
 ![](https://rstudio-education.github.io/tidyverse-cookbook/images/tidyr-gather.png)
 
-- `pivot_wider` - you will end up with more variables
+`pivot_wider` - you will end up with more variables (or at least fewer rows)
 ![](https://rstudio-education.github.io/tidyverse-cookbook/images/tidyr-spread.png)
+---
+
+## Does this look familiar? 
+ 
+
+![](Screenshot_nhs_111.png)
+--
+
+👨‍👩‍👧 😄
+
+
+--
+
+ 💻 😢 
+
+
 
 ---
 class: 
@@ -294,14 +294,14 @@ head(sitrep_long)
 
 ```
 ## # A tibble: 6 x 5
-##   NHS_111_area_name       year day_month calls date      
-##   &lt;chr&gt;                  &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
-## 1 North East England NH…  2018 26_Feb     2272 2018-02-26
-## 2 North East England NH…  2018 27_Feb     1793 2018-02-27
-## 3 North East England NH…  2018 28_Feb     1724 2018-02-28
-## 4 North East England NH…  2018 01_Mar     1707 2018-03-01
-## 5 North East England NH…  2018 02_Mar     1819 2018-03-02
-## 6 North East England NH…  2018 03_Mar     3998 2018-03-03
+##   NHS_111_area_name        year day_month calls date      
+##   &lt;chr&gt;                   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
+## 1 North East England NHS…  2018 26_Feb     2272 2018-02-26
+## 2 North East England NHS…  2018 27_Feb     1793 2018-02-27
+## 3 North East England NHS…  2018 28_Feb     1724 2018-02-28
+## 4 North East England NHS…  2018 01_Mar     1707 2018-03-01
+## 5 North East England NHS…  2018 02_Mar     1819 2018-03-02
+## 6 North East England NHS…  2018 03_Mar     3998 2018-03-03
 ```
 
 ---
@@ -311,26 +311,21 @@ Calculate total calls by region
 sitrep_calls_by_region &lt;- sitrep_long %&gt;% 
   group_by(NHS_111_area_name) %&gt;% 
   summarise(total_calls_region=sum(calls)) 
-```
 
-```
-## `summarise()` ungrouping output (override with `.groups` argument)
-```
 
-```r
 head(sitrep_calls_by_region)
 ```
 
 ```
 ## # A tibble: 6 x 2
-##   NHS_111_area_name                     total_calls_regi…
-##   &lt;chr&gt;                                             &lt;dbl&gt;
-## 1 Banes &amp; Wiltshire NHS 111                          3098
-## 2 Berkshire NHS 111                                    NA
-## 3 Bristol, North Somerset &amp; South Glou…              6199
-## 4 Buckinghamshire NHS 111                              NA
-## 5 Cambridgeshire &amp; Peterborough NHS 111              4634
-## 6 Cornwall NHS 111                                   3271
+##   NHS_111_area_name                      total_calls_regi…
+##   &lt;chr&gt;                                              &lt;dbl&gt;
+## 1 Banes &amp; Wiltshire NHS 111                           3098
+## 2 Berkshire NHS 111                                     NA
+## 3 Bristol, North Somerset &amp; South Glouc…              6199
+## 4 Buckinghamshire NHS 111                               NA
+## 5 Cambridgeshire &amp; Peterborough NHS 111               4634
+## 6 Cornwall NHS 111                                    3271
 ```
 
 
@@ -345,11 +340,7 @@ sitrep_long %&gt;%
   theme_minimal() + scale_x_date(date_labels = '%Y-%m-%d') + scale_y_continuous(limits = c(0, NA), labels=scales::comma) + labs(x='', y='', title='Daily calls to NHS 111')
 ```
 
-```
-## `summarise()` ungrouping output (override with `.groups` argument)
-```
-
-![](slides_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+&lt;img src="slides_files/figure-html/unnamed-chunk-9-1.png" width="504" /&gt;
 
 ---
 
@@ -381,6 +372,58 @@ head(sitrep_wide)
 ## #   `2018-03-02` &lt;dbl&gt;, `2018-03-03` &lt;dbl&gt;,
 ## #   `2018-03-04` &lt;dbl&gt;
 ```
+
+---
+The `us_rent_income` dataset contains information about median income and rent for each state in the US for 2017.
+
+
+```r
+us_rent_income
+```
+
+```
+## # A tibble: 104 x 5
+##    GEOID NAME       variable estimate   moe
+##    &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;
+##  1 01    Alabama    income      24476   136
+##  2 01    Alabama    rent          747     3
+##  3 02    Alaska     income      32940   508
+##  4 02    Alaska     rent         1200    13
+##  5 04    Arizona    income      27517   148
+##  6 04    Arizona    rent          972     4
+##  7 05    Arkansas   income      23789   165
+##  8 05    Arkansas   rent          709     5
+##  9 06    California income      29454   109
+## 10 06    California rent         1358     3
+## # … with 94 more rows
+```
+
+---
+
+
+```r
+us_wide &lt;- pivot_wider(us_rent_income, 
+                       names_from = variable, 
+                       values_from = c(estimate, moe))
+```
+
+
+
+```r
+ggplot(us_wide, aes(x=estimate_income, estimate_rent)) + geom_point(colour='purple') + scale_y_continuous(limits=c(0, NA)) + scale_x_continuous(limits=c(0, NA)) +
+  theme_minimal() + labs(x='Estimated income', y='Estimated rent')
+```
+
+&lt;img src="slides_files/figure-html/unnamed-chunk-13-1.png" width="504" /&gt;
+
+---
+# Note!
+
+names_to and values_to from `pivot_longer()` should be quoted because you are creating new variables
+
+names_from and values_from from `pivot_wider()` should not be quoted because you are referring to variables that exist in your data frame.
+
+
 
 ---
 # Things get worse
@@ -444,9 +487,15 @@ tail(who)
 
 new 
 
++
+
 method of diagnosis (rel = relapse, sn = negative pulmonary smear, sp = positive pulmonary smear, ep = extrapulmonary) 
 
++
+
 gender (f = female, m = male) 
+
++
 
 age group (014 = 0-14 yrs of age, 1524 = 15-24 years of age, etc.)
 
@@ -534,6 +583,7 @@ background-size: 800px 400px
 **More rows? Great!**
 
 `bind_rows()` - use to combine different datasets eg monthly gp appointments
+
 Columns with the same variable names will be stacked but check for changes to variable names.
 
 
@@ -541,10 +591,10 @@ Columns with the same variable names will be stacked but check for changes to va
 ---
 More columns? OK this is slightly more complicated but dplyr will be your friend. 
 
-`bind_cols()` - I rarely use it - doesn't respect the order of the variables
+`bind_cols()` - I rarely use it - doesn't respect the order of the observations
 
 
-Instead we can use join functions from `dplyr`. If you know sql, this is your lucky day as the syntax is very similar. 
+If we have a variable (or many) that identify your observations then we can use join functions from `dplyr`. If you know sql, this is your lucky day as the syntax is very similar. 
 
 
 
@@ -571,28 +621,28 @@ Let's revisit the NHS 111 data from before.
 
 ```
 ## # A tibble: 6 x 5
-##   NHS_111_area_name       year day_month calls date_60sec
-##   &lt;chr&gt;                  &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
-## 1 North East England NH…  2018 26-Feb     1957 2018-02-26
-## 2 North East England NH…  2018 27-Feb     1787 2018-02-27
-## 3 North East England NH…  2018 28-Feb     1654 2018-02-28
-## 4 North East England NH…  2018 01-Mar     1661 2018-03-01
-## 5 North East England NH…  2018 02-Mar     1781 2018-03-02
-## 6 North East England NH…  2018 03-Mar     3396 2018-03-03
+##   NHS_111_area_name        year day_month calls date      
+##   &lt;chr&gt;                   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
+## 1 North East England NHS…  2018 26_Feb     2272 2018-02-26
+## 2 North East England NHS…  2018 27_Feb     1793 2018-02-27
+## 3 North East England NHS…  2018 28_Feb     1724 2018-02-28
+## 4 North East England NHS…  2018 01_Mar     1707 2018-03-01
+## 5 North East England NHS…  2018 02_Mar     1819 2018-03-02
+## 6 North East England NHS…  2018 03_Mar     3998 2018-03-03
 ```
 
 ### Calls answered within 60 seconds
 
 ```
 ## # A tibble: 6 x 5
-##   NHS_111_area_name       year day_month calls date      
-##   &lt;chr&gt;                  &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
-## 1 North East England NH…  2018 26_Feb     2272 2018-02-26
-## 2 North East England NH…  2018 27_Feb     1793 2018-02-27
-## 3 North East England NH…  2018 28_Feb     1724 2018-02-28
-## 4 North East England NH…  2018 01_Mar     1707 2018-03-01
-## 5 North East England NH…  2018 02_Mar     1819 2018-03-02
-## 6 North East England NH…  2018 03_Mar     3998 2018-03-03
+##   NHS_111_area_name        year day_month calls date_60sec
+##   &lt;chr&gt;                   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;date&gt;    
+## 1 North East England NHS…  2018 26-Feb     1957 2018-02-26
+## 2 North East England NHS…  2018 27-Feb     1787 2018-02-27
+## 3 North East England NHS…  2018 28-Feb     1654 2018-02-28
+## 4 North East England NHS…  2018 01-Mar     1661 2018-03-01
+## 5 North East England NHS…  2018 02-Mar     1781 2018-03-02
+## 6 North East England NHS…  2018 03-Mar     3396 2018-03-03
 ```
 
 
@@ -633,7 +683,7 @@ Filtering joins match observations in the same way as mutating joins, but affect
 - anti_join(x,y) drops all observations in x that have a match in y
 - semi_join(x,y) keeps all observations in x that have a match in y (similar to inner_join but no columns are added)
 
-&lt;img src="https://psyteachr.github.io/msc-data-skills/images/joins/anti_join.png" height=300&gt;
+&lt;img src="https://psyteachr.github.io/msc-data-skills/images/joins/anti_join.png" height=300 &gt;
 
 
 ---
@@ -645,20 +695,13 @@ head(regions)
 ```
 
 ```
-##            region   code
-## 1           North 111AA1
-## 2           North 111AF8
-## 3           North 111AD9
-## 4 Midlands &amp; East 111AA2
-## 5 Midlands &amp; East 111AG7
-## 6 Midlands &amp; East 111AA4
-##                  nhs_111_area_name
-## 1       North East England NHS 111
-## 2 North West inc Blackpool NHS 111
-## 3     Yorkshire And Humber NHS 111
-## 4             Lincolnshire NHS 111
-## 5     Luton &amp; Bedfordshire NHS 111
-## 6          Nottinghamshire NHS 111
+##            region   code                nhs_111_area_name
+## 1           North 111AA1       North East England NHS 111
+## 2           North 111AF8 North West inc Blackpool NHS 111
+## 3           North 111AD9     Yorkshire And Humber NHS 111
+## 4 Midlands &amp; East 111AA2             Lincolnshire NHS 111
+## 5 Midlands &amp; East 111AG7     Luton &amp; Bedfordshire NHS 111
+## 6 Midlands &amp; East 111AA4          Nottinghamshire NHS 111
 ```
 
 
@@ -668,9 +711,9 @@ head(regions)
 
 I want to check that all areas appear in the region file. What join function should I use? 
 
-1. left_join
-1. anti_join
-1. semi_join
+1. left_join(sitrep_full, region)
+1. anti_join(sitrep_full, region)
+1. semi_join(sitrep_full, region)
 
 ---
 
@@ -684,26 +727,19 @@ head(areas_of_interest)
 ```
 
 ```
-##            region   code
-## 1           North 111AA1
-## 2           North 111AF8
-## 3 Midlands &amp; East 111AC3
-## 4 Midlands &amp; East 111AC6
-## 5          London 111AA7
-## 6          London 111AD4
-##                  nhs_111_area_name
-## 1       North East England NHS 111
-## 2 North West inc Blackpool NHS 111
-## 3              North Essex NHS 111
-## 4         Northamptonshire NHS 111
-## 5  Inner North West London NHS 111
-## 6        North West London NHS 111
+##            region   code                nhs_111_area_name
+## 1           North 111AA1       North East England NHS 111
+## 2           North 111AF8 North West inc Blackpool NHS 111
+## 3 Midlands &amp; East 111AC3              North Essex NHS 111
+## 4 Midlands &amp; East 111AC6         Northamptonshire NHS 111
+## 5          London 111AA7  Inner North West London NHS 111
+## 6          London 111AD4        North West London NHS 111
 ```
 ---
 
 # Mentimeter time
 
-I want to use one the join functions to only keep the observations in `sitrep_full` that also appear in `areas_of_interest` but I don't want to keep any of the variables from `areas_of_interest`. Which statment will work?
+I want to use one the join functions to only keep the observations in `sitrep_full` that also appear in `areas_of_interest` but I don't want to keep any of the variables from `areas_of_interest`. Which statment will do want I want?
 
 
 1. anti_join(sitrep_full, areas_of_interest, by=c('NHS_111_area_name'='nhs_111_area_name'))
